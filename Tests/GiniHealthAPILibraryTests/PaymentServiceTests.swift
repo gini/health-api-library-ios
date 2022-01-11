@@ -40,25 +40,25 @@ class PaymentServiceTests: XCTestCase {
     
     func testPaymentProviders() {
         let expect = expectation(description: "returns array of payment providers")
-        sessionManagerMock.initializeWithPaymentProviders()
-        let paymentProviders = loadProviders()
+        sessionManagerMock.initializeWithPaymentProvidersResponse()
+        let paymentProvidersResponse = loadProvidersResponse()
         paymentService.paymentProviders { result in
             switch result {
-            case .success(let providers):
-                XCTAssertEqual(providers.count,
-                               paymentProviders.count,
+            case .success(let providersResponse):
+                XCTAssertEqual(providersResponse.count,
+                               paymentProvidersResponse.count,
                                "providers count should match")
                 expect.fulfill()
             case .failure:
                 break
             }
       }
-        wait(for: [expect], timeout: 1)
+        wait(for: [expect], timeout: 10)
     }
     
     func testPaymentProvider() {
         let expect = expectation(description: "returns a payment provider via id")
-        let paymentProvider = loadProvider()
+        let paymentProvider = loadProviderResponse()
         paymentService.paymentProvider(id: SessionManagerMock.paymentProviderId){ result in
             switch result {
             case .success(let provider):

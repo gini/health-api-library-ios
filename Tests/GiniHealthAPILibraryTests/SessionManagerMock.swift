@@ -21,8 +21,8 @@ final class SessionManagerMock: SessionManagerProtocol {
     static let paymentRequestURL = "https://pay-api.gini.net/paymentRequests/118edf41-102a-4b40-8753-df2f0634cb86/payment"
     static let paymentID = "b4bd3e80-7bd1-11e4-95ab-000000000000"
     var documents: [Document] = []
-    var providers: [PaymentProvider] = []
-    var provider: PaymentProvider =  loadProvider()
+    var providersResponse: [PaymentProviderResponse] = []
+    var providerResponse: PaymentProviderResponse =  loadProviderResponse()
     var paymentRequests: [PaymentRequest] = []
     var extractionFeedbackBody: Data?
     var logErrorEventBody: Data?
@@ -39,8 +39,8 @@ final class SessionManagerMock: SessionManagerProtocol {
         ]
     }
     
-    func initializeWithPaymentProviders() {
-        providers = loadProviders()
+    func initializeWithPaymentProvidersResponse() {
+        providersResponse = loadProvidersResponse()
     }
     
     func initializeWithPaymentRequests() {
@@ -96,11 +96,11 @@ final class SessionManagerMock: SessionManagerProtocol {
             case .createPaymentRequest:
                 completion(.success(SessionManagerMock.paymentRequestId as! T.ResponseType))
             case .paymentProvider(_):
-                let paymentProvider: PaymentProvider = loadProvider()
-                completion(.success(paymentProvider as! T.ResponseType))
+                let providerResponse: PaymentProviderResponse = loadProviderResponse()
+                completion(.success(providerResponse as! T.ResponseType))
             case .paymentProviders:
-                let paymentProviders: PaymentProviders = loadProviders()
-                completion(.success(paymentProviders as! T.ResponseType))
+                let paymentProvidersResponse: [PaymentProviderResponse] = loadProvidersResponse()
+                completion(.success(paymentProvidersResponse as! T.ResponseType))
             case .paymentRequest(_):
                 let paymentRequest: PaymentRequest = loadPaymentRequest()
                 completion(.success(paymentRequest as! T.ResponseType))
@@ -116,7 +116,9 @@ final class SessionManagerMock: SessionManagerProtocol {
             case .logErrorEvent:
                 logErrorEventBody = resource.request.httpBody ?? nil
                 completion(.success("Logged" as! T.ResponseType))
-            default: break
+            default:
+                let error = GiniError.unknown(response: nil, data: nil)
+                completion(.failure(error))
             }
         }
     }
@@ -124,7 +126,15 @@ final class SessionManagerMock: SessionManagerProtocol {
     func download<T: Resource>(resource: T,
                                cancellationToken: CancellationToken?,
                                completion: @escaping (Result<T.ResponseType, GiniError>) -> Void) {
-        
+        if let apiMethod = resource.method as? APIMethod {
+            switch apiMethod {
+            case .file(_):
+                let imageData = UIImage(named: "Gini-Test-Payment-Provider", in: Bundle.module, compatibleWith: nil)?.pngData()
+                completion(.success(imageData as! T.ResponseType))
+            default:
+                break
+            }
+        }
     }
     
     func upload<T: Resource>(resource: T,
