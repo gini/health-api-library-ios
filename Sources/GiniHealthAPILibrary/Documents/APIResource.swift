@@ -12,14 +12,18 @@ public enum APIDomain {
     case `default`
     /// A custom domain with optional custom token source
     case custom(domain: String, tokenSource: AlternativeTokenSource?)
-    
+    /// Merchant domain
+    case merchant
+
     var domainString: String {
         
         switch self {
         case .default: return "health-api.gini.net"
         case .custom(let domain, _): return domain
+        case .merchant: return "merchant-api.gini.net"
         }
     }
+    
 }
 
 struct APIResource<T: Decodable>: Resource {
@@ -29,6 +33,7 @@ struct APIResource<T: Decodable>: Resource {
     typealias ResponseType = T
     
     var domain: APIDomain
+    let apiVersion: Int
     var params: RequestParameters
     var method: APIMethod
     var authServiceType: AuthServiceType? = .apiService
@@ -39,12 +44,6 @@ struct APIResource<T: Decodable>: Resource {
     
     var scheme: URLScheme {
         return .https
-    }
-    
-    var apiVersion: Int {
-        switch domain {
-        case .default, .custom: return 4
-        }
     }
     
     var queryItems: [URLQueryItem?]? {
@@ -143,11 +142,13 @@ struct APIResource<T: Decodable>: Resource {
     
     init(method: APIMethod,
          apiDomain: APIDomain,
+         apiVersion: Int,
          httpMethod: HTTPMethod,
          additionalHeaders: HTTPHeaders = [:],
          body: Data? = nil) {
         self.method = method
         self.domain = apiDomain
+        self.apiVersion = apiVersion
         self.params = RequestParameters(method: httpMethod,
                                         body: body)
         self.params.headers = defaultHeaders.merging(additionalHeaders) { (current, _ ) in current }
