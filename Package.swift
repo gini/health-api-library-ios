@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "GiniHealthAPILibrary",
+    defaultLocalization: "en",
     platforms: [.iOS(.v12)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -24,9 +25,6 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "GiniHealthAPILibraryTests",
-            dependencies: ["GiniHealthAPILibrary"],
-            resources: [
-                    .process("Resources")
-                ]),
+            dependencies: ["GiniHealthAPILibrary"])
     ]
 )
